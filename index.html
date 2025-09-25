@@ -370,30 +370,64 @@
                 'consultation': 'Academic Consultation',
                 'project-discussion': 'Project Discussion',
                 'career-guidance': 'Career Guidance',
+                'thesis-review': 'Thesis Review',
+                'exam-preparation': 'Exam Preparation',
+                'research-help': 'Research Help',
                 'other': 'Other'
             };
 
-            return `🔔 NEW APPOINTMENT BOOKING!
-
-👤 Student: ${data.studentName}
-📧 Email: ${data.studentEmail}
-📱 Phone: ${data.studentPhone || 'Not provided'}
-
-📅 Date: ${new Date(data.appointmentDate).toLocaleDateString('en-US', {
+            // Format date in a clear way
+            const appointmentDate = new Date(data.appointmentDate);
+            const formattedDate = appointmentDate.toLocaleDateString('en-US', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
-            })}
-🕐 Time: ${formatTime(data.selectedTime)}
+            });
 
+            // Create detailed message with all information
+            return `🔔 NEW APPOINTMENT BOOKING!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 STUDENT INFORMATION:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+👤 Name: ${data.studentName}
+📧 Email: ${data.studentEmail}
+📱 Phone: ${data.studentPhone || 'Not provided'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 APPOINTMENT DETAILS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📆 Date: ${formattedDate}
+🕐 Time: ${formatTime(data.selectedTime)}
 📋 Type: ${appointmentTypes[data.appointmentType] || data.appointmentType}
 
-💬 Message: ${data.message || 'No additional notes'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💬 STUDENT'S MESSAGE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${data.message || 'No additional notes provided'}
 
-⏰ Booked at: ${new Date(data.timestamp).toLocaleString()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⏰ BOOKING DETAILS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📥 Booked on: ${new Date(data.timestamp).toLocaleString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })}
 
-Reply to confirm or reschedule!`;
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ QUICK ACTIONS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Reply with:
+✅ "CONFIRM" to confirm appointment
+🔄 "RESCHEDULE" to suggest new time  
+❌ "CANCEL" to cancel appointment
+
+🎯 Contact student: ${data.studentEmail}`;
         }
 
         // Format time from 24hr to 12hr
