@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book an Appointment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .time-slot {
+            padding: 10px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .time-slot:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .time-slot.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .time-slot.unavailable {
+            background: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+            border-color: #ddd;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+            display: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .required {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 Book Your Appointment</h1>
+        
+        <div class="success-message" id="successMessage">
+            ✅ Your appointment has been booked successfully! You will receive a confirmation shortly.
+        </div>
+        
+        <div class="error-message" id="errorMessage">
+            ❌ There was an error booking your appointment. Please try again.
+        </div>
+
+        <form id="appointmentForm">
+            <div class="form-group">
+                <label for="studentName">Student Name <span class="required">*</span></label>
+                <input type="text" id="studentName" name="studentName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="studentEmail">Email Address <span class="required">*</span></label>
+                <input type="email" id="studentEmail" name="studentEmail" required>
+            </div>
+
+            <div class="form-group">
+                <label for="studentPhone">Phone Number</label>
+                <input type="tel" id="studentPhone" name="studentPhone">
+            </div>
+
+            <div class="form-group">
+                <label for="appointmentDate">Preferred Date <span class="required">*</span></label>
+                <input type="date" id="appointmentDate" name="appointmentDate" required>
+            </div>
+
+            <div class="form-group">
+                <label>Preferred Time <span class="required">*</span></label>
+                <div class="time-slots" id="timeSlots">
+                    <div class="time-slot" data-time="09:00">9:00 AM</div>
+                    <div class="time-slot" data-time="10:00">10:00 AM</div>
+                    <div class="time-slot" data-time="11:00">11:00 AM</div>
+                    <div class="time-slot" data-time="14:00">2:00 PM</div>
+                    <div class="time-slot" data-time="15:00">3:00 PM</div>
+                    <div class="time-slot" data-time="16:00">4:00 PM</div>
+                </div>
+                <input type="hidden" id="selectedTime" name="selectedTime" required>
+            </div>
+
+            <div class="form-group">
+                <label for="appointmentType">Appointment Type</label>
+                <select id="appointmentType" name="appointmentType">
+                    <option value="consultation">Academic Consultation</option>
+                    <option value="project-discussion">Project Discussion</option>
+                    <option value="career-guidance">Career Guidance</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="message">Additional Notes</label>
+                <textarea id="message" name="message" rows="4" placeholder="Please describe the purpose of your appointment..."></textarea>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Booking your appointment...</p>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                📅 Book Appointment
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // Set minimum date to today
+        document.getElementById('appointmentDate').min = new Date().toISOString().split('T')[0];
+
+        // Handle time slot selection
+        const timeSlots = document.querySelectorAll('.time-slot');
+        const selectedTimeInput = document.getElementById('selectedTime');
+
+        timeSlots.forEach(slot => {
+            slot.addEventListener('click', function() {
+                if (this.classList.contains('unavailable')) return;
+                
+                timeSlots.forEach(s => s.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedTimeInput.value = this.dataset.time;
+            });
+        });
+
+        // Simulate unavailable time slots (you can connect this to your backend)
+        function updateAvailableSlots() {
+            // This is just a simulation - you'd get real data from your backend
+            const unavailableSlots = ['11:00', '15:00']; // Example unavailable times
+            
+            timeSlots.forEach(slot => {
+                if (unavailableSlots.includes(slot.dataset.time)) {
+                    slot.classList.add('unavailable');
+                    slot.textContent += ' (Booked)';
+                }
+            });
+        }
+
+        // Call on page load and when date changes
+        updateAvailableSlots();
+        document.getElementById('appointmentDate').addEventListener('change', updateAvailableSlots);
+
+        // Handle form submission
+        document.getElementById('appointmentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const appointmentData = {
+                studentName: formData.get('studentName'),
+                studentEmail: formData.get('studentEmail'),
+                studentPhone: formData.get('studentPhone'),
+                appointmentDate: formData.get('appointmentDate'),
+                selectedTime: formData.get('selectedTime'),
+                appointmentType: formData.get('appointmentType'),
+                message: formData.get('message'),
+                timestamp: new Date().toISOString()
+            };
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('submitBtn').disabled = true;
+
+            try {
+                // Here you would send the data to your webhook/notification service
+                // For demonstration, we'll simulate the API call
+                await simulateBookingAPI(appointmentData);
+                
+                // Show success message
+                document.getElementById('successMessage').style.display = 'block';
+                document.getElementById('errorMessage').style.display = 'none';
+                this.reset();
+                timeSlots.forEach(s => s.classList.remove('selected'));
+                selectedTimeInput.value = '';
+                
+                // Scroll to success message
+                document.getElementById('successMessage').scrollIntoView({ behavior: 'smooth' });
+                
+            } catch (error) {
+                console.error('Booking error:', error);
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('successMessage').style.display = 'none';
+            } finally {
+                // Hide loading
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('submitBtn').disabled = false;
+            }
+        });
+
+        // Send appointment data to WhatsApp notification service
+        async function simulateBookingAPI(appointmentData) {
+            // CallMeBot WhatsApp API - Replace with your phone number and API key
+            const phoneNumber = '966551660095'; // Replace with your WhatsApp number (with country code, no + or spaces)
+            const apiKey = 'https://api.callmebot.com/whatsapp.php?phone=966551660095&text=This+is+a+test&apikey=5434201'; // Get this from CallMeBot
+            
+            // Format the message
+            const message = formatWhatsAppMessage(appointmentData);
+            
+            // CallMeBot WhatsApp API endpoint
+            const whatsappURL = `https://api.callmebot.com/whatsapp.php?phone=${phoneNumber}&text=${encodeURIComponent(message)}&apikey=${apiKey}`;
+            
+            try {
+                // Send WhatsApp notification
+                const response = await fetch(whatsappURL, {
+                    method: 'GET'
+                });
+                
+                // Also save to Google Sheets for backup (optional)
+                await saveToGoogleSheets(appointmentData);
+                
+                console.log('WhatsApp notification sent successfully');
+                
+            } catch (error) {
+                console.error('Error sending notification:', error);
+                // Still save locally even if WhatsApp fails
+                saveLocally(appointmentData);
+                throw error;
+            }
+        }
+
+        // Format message for WhatsApp
+        function formatWhatsAppMessage(data) {
+            const appointmentTypes = {
+                'consultation': 'Academic Consultation',
+                'project-discussion': 'Project Discussion',
+                'career-guidance': 'Career Guidance',
+                'other': 'Other'
+            };
+
+            return `🔔 NEW APPOINTMENT BOOKING!
+
+👤 Student: ${data.studentName}
+📧 Email: ${data.studentEmail}
+📱 Phone: ${data.studentPhone || 'Not provided'}
+
+📅 Date: ${new Date(data.appointmentDate).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })}
+🕐 Time: ${formatTime(data.selectedTime)}
+
+📋 Type: ${appointmentTypes[data.appointmentType] || data.appointmentType}
+
+💬 Message: ${data.message || 'No additional notes'}
+
+⏰ Booked at: ${new Date(data.timestamp).toLocaleString()}
+
+Reply to confirm or reschedule!`;
+        }
+
+        // Format time from 24hr to 12hr
+        function formatTime(time24) {
+            const [hours, minutes] = time24.split(':');
+            const hour12 = hours % 12 || 12;
+            const ampm = hours < 12 ? 'AM' : 'PM';
+            return `${hour12}:${minutes} ${ampm}`;
+        }
+
+        // Save to Google Sheets as backup
+        async function saveToGoogleSheets(appointmentData) {
+            // Google Apps Script Web App URL - you can set this up for data backup
+            const googleSheetsURL = 'YOUR_GOOGLE_APPS_SCRIPT_URL';
+            
+            try {
+                await fetch(googleSheetsURL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(appointmentData)
+                });
+            } catch (error) {
+                console.log('Google Sheets backup failed, but WhatsApp sent successfully');
+            }
+        }
+
+        // Save locally as fallback
+        function saveLocally(appointmentData) {
+            const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+            appointments.push(appointmentData);
+            localStorage.setItem('appointments', JSON.stringify(appointments));
+        }
+    </script>
+</body>
+</html>
